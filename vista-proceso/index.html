@@ -134,42 +134,6 @@ body{background:#eef2f8}
 </div>
 <script>
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-function $(id){ return document.getElementById(id); }
-let CLAVE_ACTUAL = '', DATOS_ACTUAL = null;
-const TIPOS_CERT = { estudio: 'Certificado de estudio', matricula: 'Constancia de matrícula', convivencia: 'Certificado de convivencia', pazysalvo: 'Paz y salvo' };
-const fmtFecha = iso => { try{ return new Date(String(iso)+'T12:00:00').toLocaleDateString('es-CO', { weekday:'long', day:'numeric', month:'long' }); }catch(e){ return String(iso||''); } };
-const hoyISO = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
-const ETAPAS_PROC = [
-  { k:'NUEVA', ico:'📥', nombre:'Inscrito', msg:'Recibimos tu formulario; está en la fila de revisión.' },
-  { k:'PROCESO', ico:'🔄', nombre:'En proceso', msg:'El colegio está revisando tu solicitud.' },
-  { k:'ADMITIDA', ico:'✅', nombre:'Admitido', msg:'¡Fuiste admitido! Comunícate con secretaría para formalizar.' },
-  { k:'IMPORTADA', ico:'🎓', nombre:'Matriculado', msg:'¡Ya eres parte del colegio! 🎓' }
-];
-function esProcesoValido(p){ return !!p && typeof p === 'object' && typeof p.etapa === 'string' && typeof p.nombre === 'string'; }
-function esConsultaValida(d){ return !!d && typeof d === 'object' && !Array.isArray(d) && typeof d.nombres === 'string' && d.nombres.length > 0; }
-function procesoHTML(p){
-  const etapa = p.etapa || 'NUEVA';
-  let idx = ETAPAS_PROC.findIndex(x => x.k === etapa); if(idx < 0) idx = 0;
-  let h = '<div class="card"><h2><span class="ico">📋</span> Tu proceso de matrícula 2027</h2>'
-    + '<p style="margin:0"><strong>' + esc(p.nombre || '') + '</strong>' + (p.grado ? ' · Grado solicitado: <strong>' + esc(p.grado) + '</strong>' : '') + '</p>';
-  if(p.tramite === 'ACTUALIZACION'){
-    if(etapa === 'IMPORTADA'){
-      h += '<div class="aviso-ok" style="margin-top:12px">✅ <strong>Tus datos ya fueron actualizados</strong> por el colegio. ¡Gracias por mantener la información al día!</div>';
-    } else if(idx >= 1){
-      h += '<p style="margin:10px 0 0">🔄 <strong>En revisión:</strong> recibimos tu actualización de datos y el colegio la está revisando.</p>';
-    } else {
-      h += '<p style="margin:10px 0 0">📥 <strong>Recibida:</strong> recibimos tu formulario de actualización de datos; está en la fila de revisión.</p>';
-    }
-  } else {
-    h += '<div class="proc-pasos">' + ETAPAS_PROC.map((s, i) => {
-        const cls = i < idx ? 'proc-ok' : (i === idx ? 'proc-actual' : 'proc-pend');
-        return (i ? '<div class="proc-flecha">➜</div>' : '') + '<div class="proc-paso ' + cls + '"><div class="proc-ico">' + (i < idx ? '✅' : s.ico) + '</div><div class="proc-nom">' + s.nombre + '</div></div>';
-      }).join('') + '</div>'
-      + '<p class="proc-msg">' + esc(ETAPAS_PROC[idx].msg) + '</p>';
-  }
-  if(p.ts) h += '<p class="nota" style="margin:8px 0 0">Formulario recibido el ' + new Date(p.ts).toLocaleDateString('es-CO', { day:'numeric', month:'long', year:'numeric' }) + '. Vuelve a consultar con el mismo documento para ver los avances.</p>';
-  return h + '</div>';
-}
 const ETAPAS_PROC = [
   { k:'NUEVA', ico:'📥', nombre:'Inscrito', msg:'Recibimos tu formulario; está en la fila de revisión.' },
   { k:'PROCESO', ico:'🔄', nombre:'En proceso', msg:'El colegio está revisando tu solicitud.' },
@@ -199,6 +163,7 @@ function procesoHTML(p){
   if(p.ts) h += '<p class="nota" style="margin:8px 0 0">Formulario recibido el ' + new Date(p.ts).toLocaleDateString('es-CO', { day:'numeric', month:'long', year:'numeric' }) + '. Vuelve a consultar con el mismo documento para ver los avances.</p>';
   return h + '</div>';
 }
+
 const base = { nombre: 'Samuel Pérez Gómez', grado: 'Transición', ts: new Date('2026-10-28T10:00:00').getTime() };
 document.getElementById('r1').innerHTML = procesoHTML(Object.assign({}, base, { etapa: 'PROCESO' }));
 document.getElementById('r2').innerHTML = procesoHTML(Object.assign({}, base, { etapa: 'NUEVA' }));
