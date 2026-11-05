@@ -134,6 +134,7 @@ body{background:#eef2f8}
 </div>
 <script>
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
 const ETAPAS_PROC = [
   { k:'NUEVA', ico:'📥', nombre:'Inscrito', msg:'Recibimos tu formulario; está en la fila de revisión.' },
   { k:'PROCESO', ico:'🔄', nombre:'En proceso', msg:'El colegio está revisando tu solicitud.' },
@@ -164,9 +165,31 @@ function procesoHTML(p){
   return h + '</div>';
 }
 
-const base = { nombre: 'Samuel Pérez Gómez', grado: 'Transición', ts: new Date('2026-10-28T10:00:00').getTime() };
-document.getElementById('r1').innerHTML = procesoHTML(Object.assign({}, base, { etapa: 'PROCESO' }));
-document.getElementById('r2').innerHTML = procesoHTML(Object.assign({}, base, { etapa: 'NUEVA' }));
-document.getElementById('r3').innerHTML = procesoHTML(Object.assign({}, base, { etapa: 'ADMITIDA' }));
+function documentosProcesoHTML(p){
+  if(!p || p.tramite === 'ACTUALIZACION' || p.etapa === 'IMPORTADA') return '';
+  const req = Array.isArray(p.docsRequeridos) ? p.docsRequeridos : [];
+  if(!req.length) return '';
+  const env = Array.isArray(p.enviosDocs) ? p.enviosDocs : [];
+  let s = '<div class="card"><h2><span class="ico">📁</span> Documentos requeridos</h2>'
+    + '<p style="margin:0 0 8px">Para avanzar en tu proceso de matrícula, envía estos documentos por aquí (foto o PDF, máximo 2 MB cada archivo; hasta 5 archivos por envío). El colegio los revisa y los guarda en la carpeta del aspirante.</p>';
+  s += req.map((r, i) => {
+    const pend = !r.ok && env.some(x => x.estado === 'PENDIENTE' && (x.categoria || '') === r.nombre);
+    let linea = '<p style="margin:5px 0">' + (r.ok ? '✔' : (pend ? '🕐' : '⬜')) + ' ' + esc(r.nombre) + ' — ' + (r.ok ? '<strong>Guardado</strong>' : (pend ? '<strong>En revisión</strong>' : '<strong>Pendiente</strong>'));
+    if(!r.ok && !pend) linea += ' <button class="btn-pri" style="width:auto;padding:5px 14px;font-size:.9rem" onclick="enviarDocRanuraAsp(' + i + ')">Enviar</button>';
+    return linea + '</p>';
+  }).join('');
+  if(env.length){
+    s += '<p style="margin:10px 0 4px"><strong>📤 Tus envíos de documentos:</strong></p>' + env.map(x => '<p style="margin:5px 0">' + (x.estado === 'ATENDIDA' ? '✔ <strong>Guardado</strong>' : (x.estado === 'DESCARTADO' ? '✖ <strong>No guardado</strong> — escríbenos por WhatsApp si tienes dudas' : '🕐 <strong>En revisión</strong> por el colegio')) + ' · ' + esc(x.categoria || 'Documentos') + ' · ' + new Date(x.ts || Date.now()).toLocaleDateString('es-CO') + (x.archivos && x.archivos.length ? ' <span class="nota">(' + x.archivos.map(esc).join(', ') + ')</span>' : '') + '</p>').join('');
+  }
+  s += '<div id="docs-asp-msg"></div><input type="file" id="docs-files-ranura-asp" style="display:none" multiple accept="image/*,.pdf" onchange="enviarArchivosRanuraAsp(this)"></div>';
+  return s;
+}
+
+const req = [{nombre:'Certificado EPS', ok:true}, {nombre:'Certificado de vacunas', ok:false}, {nombre:'Registro civil', ok:false}, {nombre:'Cédula de ciudadanía del padre y la madre', ok:false}];
+const env = [{ts: new Date('2026-11-02T09:00:00').getTime(), estado:'PENDIENTE', categoria:'Certificado de vacunas', archivos:['vacunas.jpg']}];
+const base = { nombre: 'Samuel Pérez Gómez', grado: 'Transición', ts: new Date('2026-10-28T10:00:00').getTime(), docsRequeridos: req, enviosDocs: env };
+document.getElementById('r1').innerHTML = procesoHTML(Object.assign({}, base, { etapa: 'PROCESO' })) + documentosProcesoHTML(Object.assign({}, base, { etapa: 'PROCESO' }));
+document.getElementById('r2').innerHTML = procesoHTML(Object.assign({}, base, { etapa: 'NUEVA' })) + documentosProcesoHTML(Object.assign({}, base, { etapa: 'NUEVA' }));
+document.getElementById('r3').innerHTML = procesoHTML(Object.assign({}, base, { etapa: 'ADMITIDA' })) + documentosProcesoHTML(Object.assign({}, base, { etapa: 'ADMITIDA' }));
 </script>
 </body></html>
