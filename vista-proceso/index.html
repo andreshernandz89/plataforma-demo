@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vista del acudiente — proceso de matrícula</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{overflow-x:hidden}
+  img,video,table{max-width:100%}
+  input,select,textarea{max-width:100%}
+  p,li,td,th,.nota,.doc{overflow-wrap:break-word}
+  .tabla-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:8px 0}
+  .tabla-scroll .doc-tabla{margin:0}
+  :root{--azul:#0f47b8;--azul2:#2f6bdf;--tinta:#1c2b3a;--suave:#4c5f7a}
+  body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:linear-gradient(180deg,#dfeafc 0,#eef3fc 260px,#f2f6fd 100%);color:var(--tinta);min-height:100vh}
+  header{background:linear-gradient(135deg,#0b3a94,#1256c4 55%,#2f6bdf);color:#fff;text-align:center;padding:14px 12px;box-shadow:0 4px 18px rgba(11,58,148,.25)}
+  header img{width:56px;height:56px;object-fit:contain;background:#fff;border-radius:16px;padding:5px;box-shadow:0 6px 16px rgba(0,0,0,.18)}
+  header h1{margin:8px 0 1px;font-size:1.22rem}
+  header p{margin:0;opacity:.88;font-size:.9rem}
+  main{max-width:780px;margin:0 auto;padding:20px 14px 42px}
+  .card{background:#fff;border:1px solid #e3ecfb;border-radius:18px;box-shadow:0 6px 24px rgba(15,71,184,.08);padding:22px;margin-bottom:16px}
+  label{font-weight:700;display:block;margin:12px 0 6px}
+  input,select,textarea{width:100%;padding:13px;border:1.5px solid #b9c8e4;border-radius:12px;font-size:1.03rem;font-family:inherit;background:#fff;color:var(--tinta)}
+  input:focus,select:focus,textarea:focus{outline:3px solid rgba(47,107,223,.25);border-color:var(--azul2)}
+  button{font-family:inherit}
+  .btn-pri{background:linear-gradient(135deg,#1256c4,#2f6bdf);color:#fff;border:0;border-radius:999px;padding:14px 22px;min-height:58px;font-size:1.05rem;font-weight:700;cursor:pointer;width:100%;margin-top:14px;box-shadow:0 6px 14px rgba(18,86,196,.28)}
+  .btn-pri:disabled{opacity:.6;cursor:wait}
+  button.sec{background:#e8eefb;color:var(--azul);border:0;border-radius:999px;padding:11px 18px;font-weight:700;cursor:pointer}
+  .btn-link{background:none;border:0;color:var(--azul);font-weight:700;cursor:pointer;width:100%;margin-top:10px;padding:6px;text-decoration:underline;font-size:.95rem}
+  .error{background:#fdecea;color:#8f1d1d;border:1px solid #f3c0bb;border-radius:12px;padding:12px;margin-top:12px}
+  .msg-ok{background:#e2f4e5;color:#1e7d32;border:1px solid #bfe6c6;border-radius:12px;padding:12px;margin-top:12px}
+  .aviso-ok{background:#e2f4e5;color:#1e7d32;border:1px solid #bfe6c6;border-radius:12px;padding:10px 12px;margin:8px 0}
+  .aviso-no{background:#fdecea;color:#8f1d1d;border:1px solid #f3c0bb;border-radius:12px;padding:10px 12px;margin:8px 0}
+  .aviso-x{float:right;background:none;border:none;font-size:1.05rem;line-height:1;cursor:pointer;color:inherit;opacity:.5;padding:0 0 4px 10px}
+  .alumno{font-size:1.22rem;font-weight:800;color:var(--azul)}
+  .grado{display:inline-block;background:#e8eefb;color:var(--azul);border-radius:999px;padding:3px 12px;font-weight:700;font-size:.88rem}
+  .chip{display:inline-block;border-radius:999px;padding:3px 12px;font-weight:700;font-size:.88rem}
+  .chip-ok{background:#e2f4e5;color:#1e7d32}
+  .chip-warn{background:#fff4d6;color:#8a6100}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .hero-top{display:flex;gap:14px;align-items:center}
+  .avatar{width:58px;height:58px;flex:none;border-radius:50%;background:linear-gradient(135deg,#1256c4,#2f6bdf);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;box-shadow:0 4px 10px rgba(18,86,196,.3)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:16px}
+  .stat{background:#f4f8ff;border:1px solid #e3ecfb;border-radius:14px;padding:12px 14px}
+  .stat .st-t{font-size:.78rem;font-weight:700;color:var(--suave);text-transform:uppercase;letter-spacing:.4px}
+  .stat .st-v{font-size:1.3rem;font-weight:800;color:var(--azul);margin:2px 0}
+  .stat .st-s{font-size:.85rem;color:var(--suave)}
+  .barra{height:8px;background:#e1ebfb;border-radius:99px;overflow:hidden;margin-top:8px}
+  .barra i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#2f6bdf,#37b24d)}
+  h2{color:var(--azul);margin:4px 0 12px;font-size:1.18rem;display:flex;align-items:center;gap:9px}
+  h2 .ico{background:#e8eefb;border-radius:10px;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem;flex:none}
+  .doc h3{color:var(--azul)} .doc h4{margin:14px 0 6px;color:#33527e}
+  .doc-tabla{border-collapse:collapse;width:100%;margin:8px 0}
+  .doc-tabla th,.doc-tabla td{border:1px solid #c9d6ef;padding:8px 10px;text-align:left}
+  .doc-tabla th{background:#e8eefb}
+  .doc-firma{text-align:right;font-weight:700;margin-top:16px}
+  .nota{font-size:.92rem;color:var(--suave)}
+  .intro{margin:0 0 6px;color:var(--suave);line-height:1.5}
+  footer{text-align:center;color:#6b7d94;font-size:.88rem;padding:8px 10px 26px}
+  footer .wa{display:inline-block;margin-top:8px;background:#1eb85a;color:#fff;font-weight:700;text-decoration:none;padding:10px 18px;border-radius:999px;box-shadow:0 4px 10px rgba(30,184,90,.3)}
+  .desp-cab{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;user-select:none}
+  .desp-cab h2{margin:0}
+  .desp-flecha{font-size:1.05rem;color:var(--azul);transition:transform .25s;flex:none}
+  .desp-cuerpo{display:none;margin-top:12px}
+  .card.abierta .desp-cuerpo{display:block}
+  .card.abierta .desp-flecha{transform:rotate(180deg)}
+  .pdf-dl{ display:inline-flex; align-items:center; gap:7px; background:#c62828; color:#fff; padding:7px 12px; border-radius:9px; font-size:.85rem; font-weight:600; text-decoration:none; margin-left:8px; vertical-align:middle }
+  .pdf-dl .pdf-ico{ background:#fff; color:#c62828; font-weight:800; font-size:.68rem; padding:2px 4px; border-radius:3px; letter-spacing:.4px }
+  @media print{ header,.buscador,.no-print,footer{display:none} .card{box-shadow:none} }
+  @page{ size:Letter; margin:0 }
+  #cert-print{display:none}
+  @media print{ body.imprimiendo-cert header, body.imprimiendo-cert main, body.imprimiendo-cert footer{display:none !important} body.imprimiendo-cert #cert-print{display:block} }
+  .proc-pasos{display:flex;align-items:stretch;gap:5px;margin:14px 0 4px}
+  .proc-paso{flex:1 1 0;min-width:0;text-align:center;padding:10px 3px;border-radius:14px;border:1.5px solid #e3ecfb;background:#f7faff}
+  .proc-ico{font-size:1.3rem;line-height:1.25}
+  .proc-nom{font-size:.76rem;font-weight:700;margin-top:2px;overflow-wrap:break-word}
+  .proc-ok{background:#e2f4e5;border-color:#bfe6c6;color:#1e7d32}
+  .proc-actual{background:#e8eefb;border-color:var(--azul2);color:var(--azul);box-shadow:0 0 0 3px rgba(47,107,223,.16)}
+  .proc-pend{opacity:.42}
+  .proc-flecha{align-self:center;color:#9db4d8;font-weight:800;font-size:.85rem;flex:none}
+  .proc-msg{font-size:1.03rem;margin:10px 0 0;line-height:1.45}
+  @media (max-width:420px){ .proc-pasos{flex-wrap:wrap} .proc-paso{flex:1 1 40%} .proc-flecha{display:none} .proc-nom{font-size:.72rem} }
+  @media (max-width:640px){
+    main{padding:16px 10px 36px}
+    .card{padding:18px 15px}
+    h2{font-size:1.22rem;flex-wrap:wrap}
+    .pdf-dl{margin-left:0;min-height:48px;padding:10px 14px}
+    .desp-cab{min-height:52px;padding:4px 0}
+    .btn-pri{min-height:52px}
+    button.sec{min-height:48px;padding:12px 18px}
+    .btn-link{min-height:48px;padding:12px 6px}
+    footer .wa{min-height:48px;padding:12px 20px;display:inline-flex;align-items:center}
+    .aviso-x{padding:10px 6px 10px 16px;margin-top:-6px}
+    input,select,textarea{min-height:48px}
+    .alumno{font-size:1.38rem}
+    .chip,.grado{font-size:.95rem;padding:5px 14px}
+    .stat .st-v{font-size:1.5rem}
+    .stat .st-s{font-size:.92rem}
+    .desp-cuerpo{font-size:1.02rem;line-height:1.5}
+    .doc img{height:auto}
+  }
+  .dia-card{background:linear-gradient(160deg,#fff 60%,#eef4ff);border:1.5px solid #c9dbfa}
+  .dia-fecha{font-size:1.02rem;color:var(--suave);font-weight:700;text-transform:capitalize;margin-bottom:4px}
+  .dia-linea{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-top:1px dashed #dbe7fd;font-size:1.06rem;line-height:1.45}
+  .dia-ico{font-size:1.55rem;line-height:1.2;flex:none}
+  .dia-linea strong{color:var(--azul)}
+  .btns-grandes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  .btn-grande.activa{box-shadow:0 0 0 3px #ffffff,0 0 0 7px #1256c4,0 10px 22px rgba(18,86,196,.35);filter:brightness(1.08)}
+  .btn-grande{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:92px;padding:14px 8px;border:0;border-radius:20px;background:linear-gradient(135deg,#1256c4,#2f6bdf);color:#fff;font-size:1.12rem;font-weight:800;cursor:pointer;box-shadow:0 8px 18px rgba(18,86,196,.25);font-family:inherit;text-align:center;line-height:1.25}
+  .btn-grande .bg-ico{font-size:2rem;line-height:1}
+  .btn-grande:active{transform:scale(.98)}
+  .btn-grande.verde{background:linear-gradient(135deg,#1e9e4a,#37b24d);box-shadow:0 8px 18px rgba(30,158,74,.25)}
+  .btn-grande.morado{background:linear-gradient(135deg,#6741c4,#845ef7);box-shadow:0 8px 18px rgba(103,65,196,.25)}
+  .btn-grande.naranja{background:linear-gradient(135deg,#e8590c,#f76707);box-shadow:0 8px 18px rgba(232,89,12,.25)}
+  .btn-grande.celeste{background:linear-gradient(135deg,#0b7ea8,#22a6d8);box-shadow:0 8px 18px rgba(11,126,168,.25)}
+  .btn-grande.cafe{background:linear-gradient(135deg,#a06a1c,#c98f2e);box-shadow:0 8px 18px rgba(160,106,28,.25)}
+  @keyframes diaFlash{0%{box-shadow:0 0 0 4px rgba(47,107,223,.55)}100%{box-shadow:0 0 0 0 rgba(47,107,223,0)}}
+  .flash{animation:diaFlash 1.2s ease 2}
+  @media (max-width:420px){ .btns-grandes{gap:10px} .btn-grande{min-height:86px;font-size:1.05rem} }
+.credito-edu{ display:block; margin-top:16px; font-size:10px; font-weight:700; letter-spacing:.18em; color:#8494ab; text-transform:uppercase; }
+.logo-edu-pie{ width:168px; height:auto; margin-top:5px; }
+.copy-edu{ display:block; margin-top:6px; font-size:11px; color:#8494ab; }
+
+body{background:#eef2f8}
+.muestra{max-width:560px;margin:0 auto;padding:14px}
+.cap{font:600 13px system-ui;color:#5a6b84;margin:16px 2px 6px;text-transform:uppercase;letter-spacing:.04em}
+</style></head>
+<body><div class="muestra">
+<p class="cap">Así lo ve el acudiente al consultar el documento de su hijo(a)</p>
+<div id="r1"></div>
+<p class="cap">Cuando apenas envía el formulario</p>
+<div id="r2"></div>
+<p class="cap">Cuando ya fue admitido</p>
+<div id="r3"></div>
+</div>
+<script>
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function $(id){ return document.getElementById(id); }
+let CLAVE_ACTUAL = '', DATOS_ACTUAL = null;
+const TIPOS_CERT = { estudio: 'Certificado de estudio', matricula: 'Constancia de matrícula', convivencia: 'Certificado de convivencia', pazysalvo: 'Paz y salvo' };
+const fmtFecha = iso => { try{ return new Date(String(iso)+'T12:00:00').toLocaleDateString('es-CO', { weekday:'long', day:'numeric', month:'long' }); }catch(e){ return String(iso||''); } };
+const hoyISO = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const ETAPAS_PROC = [
+  { k:'NUEVA', ico:'📥', nombre:'Inscrito', msg:'Recibimos tu formulario; está en la fila de revisión.' },
+  { k:'PROCESO', ico:'🔄', nombre:'En proceso', msg:'El colegio está revisando tu solicitud.' },
+  { k:'ADMITIDA', ico:'✅', nombre:'Admitido', msg:'¡Fuiste admitido! Comunícate con secretaría para formalizar.' },
+  { k:'IMPORTADA', ico:'🎓', nombre:'Matriculado', msg:'¡Ya eres parte del colegio! 🎓' }
+];
+function esProcesoValido(p){ return !!p && typeof p === 'object' && typeof p.etapa === 'string' && typeof p.nombre === 'string'; }
+function esConsultaValida(d){ return !!d && typeof d === 'object' && !Array.isArray(d) && typeof d.nombres === 'string' && d.nombres.length > 0; }
+function procesoHTML(p){
+  const etapa = p.etapa || 'NUEVA';
+  let idx = ETAPAS_PROC.findIndex(x => x.k === etapa); if(idx < 0) idx = 0;
+  let h = '<div class="card"><h2><span class="ico">📋</span> Tu proceso de matrícula 2027</h2>'
+    + '<p style="margin:0"><strong>' + esc(p.nombre || '') + '</strong>' + (p.grado ? ' · Grado solicitado: <strong>' + esc(p.grado) + '</strong>' : '') + '</p>';
+  if(p.tramite === 'ACTUALIZACION'){
+    if(etapa === 'IMPORTADA'){
+      h += '<div class="aviso-ok" style="margin-top:12px">✅ <strong>Tus datos ya fueron actualizados</strong> por el colegio. ¡Gracias por mantener la información al día!</div>';
+    } else if(idx >= 1){
+      h += '<p style="margin:10px 0 0">🔄 <strong>En revisión:</strong> recibimos tu actualización de datos y el colegio la está revisando.</p>';
+    } else {
+      h += '<p style="margin:10px 0 0">📥 <strong>Recibida:</strong> recibimos tu formulario de actualización de datos; está en la fila de revisión.</p>';
+    }
+  } else {
+    h += '<div class="proc-pasos">' + ETAPAS_PROC.map((s, i) => {
+        const cls = i < idx ? 'proc-ok' : (i === idx ? 'proc-actual' : 'proc-pend');
+        return (i ? '<div class="proc-flecha">➜</div>' : '') + '<div class="proc-paso ' + cls + '"><div class="proc-ico">' + (i < idx ? '✅' : s.ico) + '</div><div class="proc-nom">' + s.nombre + '</div></div>';
+      }).join('') + '</div>'
+      + '<p class="proc-msg">' + esc(ETAPAS_PROC[idx].msg) + '</p>';
+  }
+  if(p.ts) h += '<p class="nota" style="margin:8px 0 0">Formulario recibido el ' + new Date(p.ts).toLocaleDateString('es-CO', { day:'numeric', month:'long', year:'numeric' }) + '. Vuelve a consultar con el mismo documento para ver los avances.</p>';
+  return h + '</div>';
+}
+const ETAPAS_PROC = [
+  { k:'NUEVA', ico:'📥', nombre:'Inscrito', msg:'Recibimos tu formulario; está en la fila de revisión.' },
+  { k:'PROCESO', ico:'🔄', nombre:'En proceso', msg:'El colegio está revisando tu solicitud.' },
+  { k:'ADMITIDA', ico:'✅', nombre:'Admitido', msg:'¡Fuiste admitido! Comunícate con secretaría para formalizar.' },
+  { k:'IMPORTADA', ico:'🎓', nombre:'Matriculado', msg:'¡Ya eres parte del colegio! 🎓' }
+];
+function procesoHTML(p){
+  const etapa = p.etapa || 'NUEVA';
+  let idx = ETAPAS_PROC.findIndex(x => x.k === etapa); if(idx < 0) idx = 0;
+  let h = '<div class="card"><h2><span class="ico">📋</span> Tu proceso de matrícula 2027</h2>'
+    + '<p style="margin:0"><strong>' + esc(p.nombre || '') + '</strong>' + (p.grado ? ' · Grado solicitado: <strong>' + esc(p.grado) + '</strong>' : '') + '</p>';
+  if(p.tramite === 'ACTUALIZACION'){
+    if(etapa === 'IMPORTADA'){
+      h += '<div class="aviso-ok" style="margin-top:12px">✅ <strong>Tus datos ya fueron actualizados</strong> por el colegio. ¡Gracias por mantener la información al día!</div>';
+    } else if(idx >= 1){
+      h += '<p style="margin:10px 0 0">🔄 <strong>En revisión:</strong> recibimos tu actualización de datos y el colegio la está revisando.</p>';
+    } else {
+      h += '<p style="margin:10px 0 0">📥 <strong>Recibida:</strong> recibimos tu formulario de actualización de datos; está en la fila de revisión.</p>';
+    }
+  } else {
+    h += '<div class="proc-pasos">' + ETAPAS_PROC.map((s, i) => {
+        const cls = i < idx ? 'proc-ok' : (i === idx ? 'proc-actual' : 'proc-pend');
+        return (i ? '<div class="proc-flecha">➜</div>' : '') + '<div class="proc-paso ' + cls + '"><div class="proc-ico">' + (i < idx ? '✅' : s.ico) + '</div><div class="proc-nom">' + s.nombre + '</div></div>';
+      }).join('') + '</div>'
+      + '<p class="proc-msg">' + esc(ETAPAS_PROC[idx].msg) + '</p>';
+  }
+  if(p.ts) h += '<p class="nota" style="margin:8px 0 0">Formulario recibido el ' + new Date(p.ts).toLocaleDateString('es-CO', { day:'numeric', month:'long', year:'numeric' }) + '. Vuelve a consultar con el mismo documento para ver los avances.</p>';
+  return h + '</div>';
+}
+const base = { nombre: 'Samuel Pérez Gómez', grado: 'Transición', ts: new Date('2026-10-28T10:00:00').getTime() };
+document.getElementById('r1').innerHTML = procesoHTML(Object.assign({}, base, { etapa: 'PROCESO' }));
+document.getElementById('r2').innerHTML = procesoHTML(Object.assign({}, base, { etapa: 'NUEVA' }));
+document.getElementById('r3').innerHTML = procesoHTML(Object.assign({}, base, { etapa: 'ADMITIDA' }));
+</script>
+</body></html>
