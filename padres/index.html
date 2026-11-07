@@ -34,6 +34,9 @@
   .btn-pri:disabled{opacity:.6;cursor:wait}
   button.sec{background:#e8eefb;color:var(--azul);border:0;border-radius:999px;padding:11px 18px;font-weight:700;cursor:pointer}
   .btn-link{background:none;border:0;color:var(--azul);font-weight:700;cursor:pointer;width:100%;margin-top:10px;padding:6px;text-decoration:underline;font-size:.95rem}
+  .btn-salir{background:#fff;border:1.5px solid #C62828;color:#C62828;font-weight:800;cursor:pointer;padding:9px 18px;border-radius:999px;font-size:.95rem}
+  .btn-salir:active{background:#FDECEA}
+  .ayuda-login{font-size:.88rem;color:#5A6B84;margin:10px 0 0;line-height:1.45}
   .error{background:#fdecea;color:#8f1d1d;border:1px solid #f3c0bb;border-radius:12px;padding:12px;margin-top:12px}
   .msg-ok{background:#e2f4e5;color:#1e7d32;border:1px solid #bfe6c6;border-radius:12px;padding:12px;margin-top:12px}
   .aviso-ok{background:#e2f4e5;color:#1e7d32;border:1px solid #bfe6c6;border-radius:12px;padding:10px 12px;margin:8px 0}
@@ -133,13 +136,23 @@
   <p>Consulta para padres de familia</p>
 </header>
 <main>
-  <div class="card buscador">
-    <p class="intro">Escribe el <strong>número de documento del estudiante</strong> para <strong>seguir el estado de su proceso de matrícula 2027</strong> y, si ya está matriculado, ver sus notas, su asistencia y el estado de pensiones, justificar una falta, pedir certificados y ver los próximos eventos del colegio. Solo se muestra la información de ese estudiante.</p>
-    <label for="doc">Número de documento del estudiante</label>
-    <input id="doc" inputmode="numeric" autocomplete="off" placeholder="Ej.: 1234567890">
-    <button class="btn-pri" id="btn-consultar" onclick="consultar()">Consultar</button>
-    <button class="btn-link" id="btn-otro" style="display:none" onclick="otroDocumento()">Usar otro documento</button>
+  <div class="card buscador" id="card-login">
+    <div id="panel-login-usuario">
+      <label for="login-usuario">Usuario del estudiante</label>
+      <input id="login-usuario" autocomplete="username" autocapitalize="none" placeholder="Ej.: lhernandez" onkeydown="if(event.key==='Enter')ingresarConUsuario()">
+      <label for="login-clave">Contraseña</label>
+      <input id="login-clave" type="password" autocomplete="current-password" placeholder="El número de documento del estudiante" onkeydown="if(event.key==='Enter')ingresarConUsuario()">
+      <button class="btn-pri" id="btn-ingresar" onclick="ingresarConUsuario()">Ingresar</button>
+      <p class="ayuda-login">El usuario te lo entrega el colegio: es la inicial del nombre y el apellido del estudiante, todo junto. La contraseña es su número de documento.</p>
+    </div>
+    <input id="doc" type="hidden">
     <div id="error"></div>
+  </div>
+  <div class="card" id="barra-sesion" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <span>👤 <strong>Sesión iniciada</strong></span>
+      <button type="button" class="btn-salir" onclick="cerrarSesion()">Cerrar sesión</button>
+    </div>
   </div>
   <div id="resultado"></div>
   <div class="card" id="doc-cal-card" style="display:none">
@@ -195,6 +208,29 @@ function procesoHTML(p){
   if(p.ts) h += '<p class="nota" style="margin:8px 0 0">Formulario recibido el ' + new Date(p.ts).toLocaleDateString('es-CO', { day:'numeric', month:'long', year:'numeric' }) + '. Vuelve a consultar con el mismo documento para ver los avances.</p>';
   return h + '</div>';
 }
+function normUsuario(v){ return String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, ''); }
+async function ingresarConUsuario(){
+  const err = $('error'), btn = $('btn-ingresar');
+  err.innerHTML = '';
+  const usuario = normUsuario($('login-usuario').value);
+  const claveTxt = normDoc($('login-clave').value);
+  if (!usuario || !claveTxt){ err.innerHTML = '<div class="error">Escribe el usuario y la contraseña (el documento del estudiante).</div>'; return; }
+  if (btn){ btn.disabled = true; btn.textContent = 'Ingresando…'; }
+  try {
+    const r = await fetch(RTDB + '/accesoPadres/' + encodeURIComponent(usuario) + '.json');
+    const guardada = r.ok ? await r.json() : null;
+    const clave = await sha256Hex(claveTxt);
+    if (!guardada || guardada !== clave){
+      err.innerHTML = '<div class="error">Usuario o contraseña incorrectos. Revisa los datos e inténtalo de nuevo.</div>';
+      return;
+    }
+    try{ localStorage.setItem('padres_sesion', 'usuario'); }catch(e){}
+    $('doc').value = $('login-clave').value;
+    await consultar();
+  } catch (e) {
+    err.innerHTML = '<div class="error">No se pudo ingresar. Revisa tu conexión e inténtalo de nuevo.</div>';
+  } finally { if (btn){ btn.disabled = false; btn.textContent = 'Ingresar'; } }
+}
 async function consultar(){
   const err = $('error'), res = $('resultado'), btn = $('btn-consultar');
   err.innerHTML = ''; res.innerHTML = '';
@@ -224,13 +260,13 @@ async function consultar(){
     return;
   }
   if(proceso && !datos){
-    try{ localStorage.setItem('padres_doc', doc); const bo = $('btn-otro'); if(bo) bo.style.display = ''; }catch(e){}
+    try{ localStorage.setItem('padres_doc', doc); }catch(e){} sesionIniciada();
     PROCESO_ACTUAL = proceso; DOC_CONSULTADO = ($('doc').value || '').trim();
     res.innerHTML = procesoHTML(proceso) + documentosProcesoHTML(proceso);
     res.scrollIntoView({behavior:'smooth'});
     return;
   }
-  try{ localStorage.setItem('padres_doc', doc); const bo = $('btn-otro'); if(bo) bo.style.display = ''; }catch(e){}
+  try{ localStorage.setItem('padres_doc', doc); }catch(e){} sesionIniciada();
   const nombre = ((datos.apellidos||'') + ' ' + (datos.nombres||'')).trim();
   const fmtP = v => '$' + Number(v || 0).toLocaleString('es-CO');
   const bloqueado = datos.bloqueado || (datos.pagos && datos.pagos.deuda > 0);
@@ -523,16 +559,25 @@ async function enviarPagoPension(){
   }
 }
 function altDesp(el){ const c = el.closest('.card'); if(c) c.classList.toggle('abierta'); }
-function otroDocumento(){
-  try{ localStorage.removeItem('padres_doc'); }catch(e){}
-  const inp = $('doc'); if(inp){ inp.value = ''; inp.focus(); }
+function sesionIniciada(){
+  const c = $('card-login'); if(c) c.style.display = 'none';
+  const b = $('barra-sesion'); if(b) b.style.display = '';
+}
+function cerrarSesion(){
+  try{ localStorage.removeItem('padres_doc'); localStorage.removeItem('padres_sesion'); }catch(e){}
+  const d = $('doc'); if(d) d.value = '';
+  const u = $('login-usuario'); if(u) u.value = '';
+  const cl = $('login-clave'); if(cl) cl.value = '';
   $('resultado').innerHTML = ''; $('error').innerHTML = '';
-  const bo = $('btn-otro'); if(bo) bo.style.display = 'none';
+  const b = $('barra-sesion'); if(b) b.style.display = 'none';
+  const c = $('card-login'); if(c) c.style.display = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 (function(){
-  let guardado = '';
-  try{ guardado = localStorage.getItem('padres_doc') || ''; }catch(e){}
-  if(guardado){ $('doc').value = guardado; const bo = $('btn-otro'); if(bo) bo.style.display = ''; consultar(); }
+  let guardado = '', via = '';
+  try{ guardado = localStorage.getItem('padres_doc') || ''; via = localStorage.getItem('padres_sesion') || ''; }catch(e){}
+  if(guardado && via === 'usuario'){ $('doc').value = guardado; consultar(); }
+  else if(guardado){ try{ localStorage.removeItem('padres_doc'); }catch(e){} }
 })();
 function leerComprobante(f){
   return new Promise((res, rej) => {
